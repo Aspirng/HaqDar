@@ -29,7 +29,7 @@ body {
   display: flex;
   flex-direction: column;
   background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
-                    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
+    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
 }
 
 /* Glassmorphism utility */
@@ -45,13 +45,16 @@ body {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
@@ -194,8 +197,13 @@ body {
   animation: typing 1.4s infinite ease-in-out both;
 }
 
-.typing-dot:nth-child(1) { animation-delay: -0.32s; }
-.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
 
 /* Input Area */
 .input-container {
@@ -265,6 +273,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -272,25 +281,38 @@ body {
 }
 
 @keyframes typing {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+
+  40% {
+    transform: scale(1);
+  }
 }
 
 /* Markdown styling inside bot messages */
 .bot .message-bubble p {
   margin-bottom: 0.75em;
 }
+
 .bot .message-bubble p:last-child {
   margin-bottom: 0;
 }
+
 .bot .message-bubble strong {
   color: #fff;
   font-weight: 600;
 }
-.bot .message-bubble ul, .bot .message-bubble ol {
+
+.bot .message-bubble ul,
+.bot .message-bubble ol {
   margin-left: 20px;
   margin-bottom: 1em;
 }
+
 .bot .message-bubble li {
   margin-bottom: 0.5em;
 }
