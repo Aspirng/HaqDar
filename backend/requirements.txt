@@ -8,3 +8,5 @@ openai
 langchain-text-splitters
 tenacity
 langchain-openai
+numpy
+scikit-learn

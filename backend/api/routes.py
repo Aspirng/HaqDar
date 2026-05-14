@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from rag.llm import query_gemini
+from rag.retriever import retrieve
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -12,20 +13,14 @@ def chat():
         
     user_query = data['query']
     
-    # TODO: Wait for Salman to finish the FAISS retriever.
-    # For now, we will use mock chunks to test the API layer in isolation.
-    mock_chunks = [
-        {
-            "text": "Section 302 PPC — whoever commits murder shall be punished with death.",
-            "law": "Pakistan Penal Code 1860", 
-            "section_ref": "302", 
-            "doc_type": "criminal"
-        }
-    ]
-    
     try:
-        # Call the LLM logic
-        response = query_gemini(user_query, mock_chunks)
+        # Retrieve real context chunks from the vector store
+        chunks = retrieve(user_query, top_k=5)
+        
+        # Call the LLM logic with the real retrieved chunks
+        response = query_gemini(user_query, chunks)
         return jsonify(response)
+    except FileNotFoundError as fnfe:
+        return jsonify({"error": str(fnfe)}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500

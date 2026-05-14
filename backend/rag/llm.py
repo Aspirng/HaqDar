@@ -28,9 +28,12 @@ def query_gemini(user_query: str, chunks: list) -> dict:
     prompt_template = PromptTemplate(
         input_variables=["context", "question"],
         template=(
-            "You are a helpful legal assistant specializing in Pakistani Law.\n"
-            "Use the following pieces of retrieved context to answer the user's question.\n"
-            "If you don't know the answer, just say that you don't know, don't try to make up an answer.\n\n"
+            "You are a highly professional and empathetic legal assistant specializing in Pakistani Law.\n"
+            "Use the following pieces of retrieved context to answer the user's question accurately.\n"
+            "If the provided context does not contain the answer, or if the law does not explicitly cover the query, "
+            "do not make up an answer. Instead, provide a detailed and polite apology message stating that you currently "
+            "do not have the specific legal provisions or information regarding that matter in your database, and advise "
+            "them to consult a qualified legal professional for accurate guidance.\n\n"
             "Context:\n{context}\n\n"
             "Question: {question}\n\n"
             "Helpful Answer:"
