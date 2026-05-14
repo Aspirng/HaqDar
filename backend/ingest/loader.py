@@ -11,16 +11,15 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 DOCUMENTS_DIR = os.path.join(os.path.dirname(__file__), "..", "documents")
 
-# Metadata for each PDF — maps filename → law name + doc_type
-DOC_META = {
-    "Pakistan Penal Code.pdf":                          {"law": "Pakistan Penal Code 1860",              "doc_type": "criminal"},
-    "Code_of_criminal_procedure_1898.pdf":              {"law": "Code of Criminal Procedure 1898",       "doc_type": "procedure"},
-    "PUB-15-000096.pdf":                                {"law": "Sindh Consumer Protection Act 2014",    "doc_type": "consumer"},
-    "administrator42956bfa0c49fd1146daa6d1a5c9cd30.pdf": {"law": "Pakistan Code Compilation",            "doc_type": "general"},
-}
-
 # RecursiveCharacterTextSplitter — 500-char chunks with 100-char overlap
 DEFAULT_SPLITTER = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+
+
+def get_law_name_from_filename(filename: str) -> str:
+    """Derive a clean law name from a filename (e.g. 'Pakistan_Penal_Code.pdf' -> 'Pakistan Penal Code')."""
+    name = filename.replace(".pdf", "").replace("_", " ").replace("-", " ")
+    # Capitalize each word
+    return " ".join([w.capitalize() for w in name.split()])
 
 
 def clean_text(text: str) -> str:
@@ -50,50 +49,62 @@ def extract_text_from_pdf(pdf_path: str) -> str:
         print(f"  pypdf error: {e}")
 
     if len(text.strip()) < 300:
-        print(f"  ⚠ Very little text extracted — PDF may be scanned/image-based")
+        print(f"  [WARN] Very little text extracted — PDF may be scanned/image-based")
 
     return text
 
 
-def load_documents() -> list[dict]:
+def load_single_document(filename: str) -> list[dict]:
     """
-    Load all PDFs from the documents directory, chunk them,
-    and return a list of dicts with text + metadata.
+    Process a single PDF, chunk it, and return metadata dicts.
+    """
+    pdf_path = os.path.join(DOCUMENTS_DIR, filename)
+    if not os.path.exists(pdf_path):
+        print(f"⚠ NOT FOUND: {pdf_path}")
+        return []
+
+    law_name = get_law_name_from_filename(filename)
+    
+    print(f"\nProcessing: {filename} ({law_name})")
+    raw = extract_text_from_pdf(pdf_path)
+    cleaned = clean_text(raw)
+
+    if not cleaned:
+        print(f"  ❌ No text extracted from {filename}")
+        return []
+
+    chunks = DEFAULT_SPLITTER.split_text(cleaned)
+    document_chunks = []
+
+    for i, chunk in enumerate(chunks):
+        if len(chunk.strip()) < 50:
+            continue
+        document_chunks.append({
+            "text": chunk,
+            "law": law_name,
+            "doc_type": "legal", # Default to legal
+            "filename": filename,
+            "doc_id": f"{filename.replace('.pdf', '')}_{i}",
+            "section_ref": extract_section_ref(chunk),
+        })
+
+    print(f"  [OK] Created {len(document_chunks)} chunks")
+    return document_chunks
+
+
+def load_documents(filenames: list[str] = None) -> list[dict]:
+    """
+    Load specific PDFs or all PDFs from documents/ if filenames is None.
     """
     all_chunks = []
+    
+    # If no filenames provided, scan the directory
+    if filenames is None:
+        filenames = [f for f in os.listdir(DOCUMENTS_DIR) if f.lower().endswith(".pdf")]
 
-    for filename, meta in DOC_META.items():
-        pdf_path = os.path.join(DOCUMENTS_DIR, filename)
-
-        if not os.path.exists(pdf_path):
-            print(f"⚠ MISSING: {filename} — skipping")
-            continue
-
-        print(f"\nLoading: {filename}")
-        raw = extract_text_from_pdf(pdf_path)
-        cleaned = clean_text(raw)
-
-        if not cleaned:
-            print(f"  ❌ No text extracted from {filename}")
-            continue
-
-        chunks = DEFAULT_SPLITTER.split_text(cleaned)
-        count = 0
-
-        for i, chunk in enumerate(chunks):
-            if len(chunk.strip()) < 50:
-                continue
-            all_chunks.append({
-                "text": chunk,
-                "law": meta["law"],
-                "doc_type": meta["doc_type"],
-                "filename": filename,
-                "doc_id": f"{filename.replace('.pdf', '')}_{i}",
-                "section_ref": extract_section_ref(chunk),
-            })
-            count += 1
-
-        print(f"  ✓ {count} chunks")
+    for filename in filenames:
+        chunks = load_single_document(filename)
+        all_chunks.extend(chunks)
 
     print(f"\n=== Total: {len(all_chunks)} chunks loaded ===")
     return all_chunks

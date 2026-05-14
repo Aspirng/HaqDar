@@ -96,6 +96,10 @@ class VectorStore:
 
         return results
 
+    def get_ingested_filenames(self) -> set[str]:
+        """Return a set of all filenames currently in the store."""
+        return {doc.get("filename") for doc in self.documents if doc.get("filename")}
+
     def save(self, path: str = None):
         """Persist the vector store to a pickle file."""
         path = path or VECTOR_STORE_PATH
@@ -105,7 +109,7 @@ class VectorStore:
         }
         with open(path, "wb") as f:
             pickle.dump(data, f)
-        print(f"✓ Vector store saved to {path} ({len(self.documents)} chunks)")
+        print(f"[OK] Vector store saved to {path} ({len(self.documents)} chunks)")
 
     @classmethod
     def load(cls, path: str = None) -> "VectorStore":
@@ -117,9 +121,9 @@ class VectorStore:
                 data = pickle.load(f)
             store.embeddings = data["embeddings"]
             store.documents = data["documents"]
-            print(f"✓ Vector store loaded from {path} ({len(store.documents)} chunks)")
+            print(f"[OK] Vector store loaded from {path} ({len(store.documents)} chunks)")
         else:
-            print(f"⚠ No vector store found at {path} — starting empty")
+            print(f"[WARN] No vector store found at {path} — starting empty")
         return store
 
 
@@ -156,4 +160,4 @@ def build_vector_store(chunks: list[dict]):
         store.add_batch(embeddings, documents)
 
     store.save()
-    print(f"\n✓ Total stored: {len(store.documents)} chunks")
+    print(f"\n[OK] Total stored: {len(store.documents)} chunks")

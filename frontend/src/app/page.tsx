@@ -100,7 +100,7 @@ export default function Home() {
 
       <div className="chat-container glass-panel" style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none' }}>
         {messages.map((msg) => (
-          <div key={msg.id} className={`message-wrapper ${msg.role}`}>
+          <div key={msg.id} className={`message-wrapper ${msg.role}`} dir="auto">
             <div className="message-bubble">
               {msg.role === "bot" ? (
                 <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -143,6 +143,7 @@ export default function Home() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={isLoading}
+          dir="auto"
         />
         <button type="submit" className="send-button" disabled={isLoading || !input.trim()}>
           {isLoading ? "..." : "Send"}
